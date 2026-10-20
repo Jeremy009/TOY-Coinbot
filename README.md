@@ -36,8 +36,8 @@ The same idea has been started over a few times. Each version is kept on its own
 | Branch | What it is |
 |---|---|
 | `main` | This iOS app (2025) |
-| [`desktop-qt`](https://github.com/Jeremy009/Coinbot/tree/desktop-qt) | The first version (2023): a PyQt5 desktop app with live candlestick charts and a MACD bot, plus the analysis scripts used to tune it |
-| [`headless-lambda`](https://github.com/Jeremy009/Coinbot/tree/headless-lambda) | A headless rewrite (2025–2026): a stateless Python bot with several indicator strategies and a backtester, packaged to run on AWS Lambda every few hours |
+| [`desktop-qt`](https://github.com/Jeremy009/TOY-Coinbot/tree/desktop-qt) | The first version (2023): a PyQt5 desktop app with live candlestick charts and a MACD bot, plus the analysis scripts used to tune it |
+| [`headless-lambda`](https://github.com/Jeremy009/TOY-Coinbot/tree/headless-lambda) | A headless rewrite (2025–2026): a stateless Python bot with several indicator strategies and a backtester, packaged to run on AWS Lambda every few hours |
 
 ## Running it
 
