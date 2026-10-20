@@ -209,8 +209,8 @@ def analyse_existing_positions(exchange_client: BitvavoClient, macd_params: Tupl
                         f"MACD Signal = {np.round(macd_candles.tail(1)['macd_signal'].item(), 2)}  "
                         )
 
-        save_dir = Path("/Users/jeremylombaerts/Library/Mobile Documents/com~apple~CloudDocs/Python/Coin"
-                        "bot/data/live logs")
+        save_dir = Path(__file__).resolve().parents[2] / "data" / "live logs"
+        save_dir.mkdir(parents=True, exist_ok=True)
         timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
         plot_macd_analysis(
             candles=candles,
