@@ -1,6 +1,6 @@
 # Coinbot (desktop, PyQt5)
 
-> **This is a toy project, and this branch is an old version of it.** The current version is the iOS app on [`main`](https://github.com/Jeremy009/Coinbot); this branch keeps the first attempt from 2023. Nothing here is financial advice, and you should not point it at an account you care about.
+> **This is a toy project, and this branch is an old version of it.** The current version is the iOS app on [`main`](https://github.com/Jeremy009/TOY-Coinbot); this branch keeps the first attempt from 2023. Nothing here is financial advice, and you should not point it at an account you care about.
 
 The first version of Coinbot: a Python desktop app, built with PyQt5 and Matplotlib, that watches a [Bitvavo](https://bitvavo.com) account and can start a simple MACD trading bot. It shows the wallet, the coins you hold and a price chart, and the bot buys and sells on its own based on MACD crossovers.
 
