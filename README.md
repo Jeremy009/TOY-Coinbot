@@ -1,6 +1,6 @@
 # Coinbot (headless, AWS Lambda)
 
-> **This is a toy project, and this branch is an older version of it.** The current version is the iOS app on [`main`](https://github.com/Jeremy009/Coinbot); this branch keeps the headless rewrite from 2025–2026. Nothing here is financial advice, and all three backtests below lose money.
+> **This is a toy project, and this branch is an older version of it.** The current version is the iOS app on [`main`](https://github.com/Jeremy009/TOY-Coinbot); this branch keeps the headless rewrite from 2025–2026. Nothing here is financial advice, and all three backtests below lose money.
 
 A headless, stateless cryptocurrency trading bot for [Bitvavo](https://bitvavo.com), written in Python 3.12. Every run it reads its open positions, scores every coin on the exchange with three technical-analysis strategies, buys the most convincing ones and sells positions whose stop-loss or exit signal triggers. It then saves its state and exits. It is packaged as a container for AWS Lambda, where EventBridge starts it every two hours, and it paper-trades by default.
 
