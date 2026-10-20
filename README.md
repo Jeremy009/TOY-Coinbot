@@ -1,220 +1,71 @@
-    # Coinbot
+# Coinbot (headless, AWS Lambda)
 
-Stateless, automated cryptocurrency trading bot using MACD indicators.
+> **This is a toy project, and this branch is an older version of it.** The current version is the iOS app on [`main`](https://github.com/Jeremy009/Coinbot); this branch keeps the headless rewrite from 2025–2026. Nothing here is financial advice, and all three backtests below lose money.
 
-## Tech Stack
+A headless, stateless cryptocurrency trading bot for [Bitvavo](https://bitvavo.com), written in Python 3.12. Every run it reads its open positions, scores every coin on the exchange with three technical-analysis strategies, buys the most convincing ones and sells positions whose stop-loss or exit signal triggers. It then saves its state and exits. It is packaged as a container for AWS Lambda, where EventBridge starts it every two hours, and it paper-trades by default.
 
-- **Backend**: Python 3.12, uv package manager
-- **Exchange**: Bitvavo API
-- **Indicators**: MACD, RSI, MFI
+![Backtest of the confluence strategy on BTC over one year](docs/images/backtest-btc-confluence.png)
 
-## Prerequisites
+*One year of BTC on 1-hour candles with the multi-strategy confluence, as plotted by the backtester: price with EMAs and Bollinger Bands, RSI, MACD and volume, with every buy and sell marked. Result: −12.3% over 19 trades.*
 
-- Python 3.12+
-- [uv](https://github.com/astral-sh/uv) package manager
-- Bitvavo API credentials
+## What it does
 
-## Quick Start
+- **Pre-filter:** skips coins it already holds, coins with less than €1M of 24-hour volume and coins that fell more than 10% in 24 hours.
+- **Three strategies** on one month of 1-hour candles, each returning buy, hold or sell with a confidence:
+  - **RSI + MACD:** oversold or overbought RSI confirmed by a MACD crossover.
+  - **EMA crossover:** golden and death crosses of the 12 and 50 EMAs, filtered by the 200 EMA trend.
+  - **Bollinger mean reversion:** bounces off the lower band and rejections at the upper band.
+- **Confluence:** the strategies vote, and a buy needs at least 60% confidence. The bot holds at most 5 positions and uses at most 5% of the available funds.
+- **Exits:** a trailing stop-loss sells a position that falls 8% below its highest price since purchase. Otherwise the strategies must agree on a sell with at least 65% confidence. The full decision tree is in [TRADING_LOGIC.md](TRADING_LOGIC.md).
+- **Dry run:** with `BOT_DRY_RUN=true` (the default) orders are simulated against a virtual balance of €1,000 with Bitvavo's fees.
+- **State and logs in S3:** positions, a trade log, the run log and a chart per decision are written to an S3 bucket, so every Lambda run starts where the last one stopped.
+- **Backtesting:** replays the same strategies over years of historical candles and plots the result.
 
-1. **Install uv** (if not already installed):
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
+| EMA crossover only: −24.7% | MACD only: −40.1% |
+|---|---|
+| ![EMA backtest](docs/images/backtest-btc-ema.png) | ![MACD backtest](docs/images/backtest-btc-macd.png) |
 
-2. **Install dependencies**:
-```bash
+## How it works
+
+The code lives in `backend/src/coinbot_backend/`:
+
+- `main.py`: `TradingBot` runs one iteration: load positions from S3, check exits, look for entries, save positions, upload logs and charts.
+- `services/bitvavo_client.py`: the Bitvavo wrapper, with rate limiting, parallel requests and the dry-run order simulation.
+- `services/trading_strategies.py`: the indicators (SMA, EMA, RSI, MACD, Bollinger Bands, ATR), the three strategies and the confluence vote.
+- `services/s3_storage.py`: positions, trades and a logging handler that buffers log lines to S3.
+- `services/technical_analysis_plot.py`: the chart saved with every decision.
+- `backtesting/`: a backtest engine that steps through historical candles every two hours with the live strategies, plus the plots above.
+- `config.py`: every setting, read from environment variables or `backend/.env` (see `.env.example`).
+- `backend/lambda_handler.py` and the `Dockerfile` wrap a single iteration for AWS Lambda.
+
+## Running it
+
+Requires Python 3.12 and [uv](https://github.com/astral-sh/uv).
+
+```sh
 make install
+cp .env.example backend/.env   # add BITVAVO_API_KEY and BITVAVO_API_SECRET
+make run                       # one bot iteration (dry run unless BOT_DRY_RUN=false)
+make test                      # the S3 tests need AWS credentials and the bucket set in S3_BUCKET_NAME
 ```
 
-3. **Set up environment variables**:
-```bash
-cp .env.example backend/.env
-# Edit backend/.env with your Bitvavo API credentials
-# Set BOT_ENABLED=true to enable trading
-```
+Backtest a coin (public market data, no API key needed for the candles):
 
-4. **Run tests**:
-```bash
-make test
-```
-
-5. **Run the trading bot**:
-```bash
+```sh
 cd backend
-uv run python -m coinbot_backend.main
+uv run python -m coinbot_backend.backtesting BTC --resolution 1h --span 1y --save btc.png
 ```
 
-See [backend/RUN_BOT.md](backend/RUN_BOT.md) for detailed bot documentation.
+### Deploying to AWS Lambda
 
-## Available Commands
+With the AWS CLI signed in, an ECR repository named `coinbot` and a Lambda function named `coinbot` (container image, arm64, 1024 MB, 15-minute timeout):
 
-Run `make help` to see all available commands:
-
-```bash
-make install      # Install all dependencies
-make test         # Run all tests
-make lint         # Run linting (ruff)
-make format       # Format code (ruff)
-make type-check   # Run type checking (mypy)
-make clean        # Remove generated files
+```sh
+make lambda-publish   # builds the arm64 image, pushes it to ECR and updates the function
 ```
 
-## Project Structure
-
-```
-coinbot/
-├── backend/
-│   ├── src/coinbot_backend/
-│   │   ├── core/           # Constants, exceptions
-│   │   ├── models/         # Data models (Candles, etc.)
-│   │   └── services/       # Trading logic, indicators, Bitvavo client
-│   ├── tests/
-│   │   ├── unit/           # Unit tests
-│   │   └── integration/    # Integration tests with Bitvavo API
-│   └── pyproject.toml
-├── Makefile
-└── README.md
-```
-
-## Deployment
-
-### AWS Lambda Deployment
-
-The bot is designed to run on AWS Lambda with scheduled invocations.
-
-#### Prerequisites
-
-- AWS CLI configured with credentials
-- ECR repository created: `coinbot`
-- S3 bucket for storing bot data
-- Bitvavo API credentials
-
-#### Build and Deploy
-
-1. **Build and push Docker image to ECR**:
-```bash
-# Authenticate to the AWS CLI
-aws login
-
-# Authenticate Docker to ECR
-aws ecr get-login-password --region eu-central-1 | \
-  docker login --username AWS --password-stdin 080328315628.dkr.ecr.eu-central-1.amazonaws.com
-
-# Build for ARM64 (Lambda)
-docker buildx build \                                                                                                        
-  --platform linux/arm64 \
-  --provenance=false \
-  --sbom=false \
-  -t 080328315628.dkr.ecr.eu-central-1.amazonaws.com/coinbot:latest \
-  --push .
-
-```
-
-2. **Create or update Lambda function**:
-```bash
-# Create function (first time only)
-aws lambda create-function \
-  --function-name coinbot \
-  --package-type Image \
-  --code ImageUri=<account-id>.dkr.ecr.eu-central-1.amazonaws.com/coinbot:latest \
-  --role arn:aws:iam::<account-id>:role/coinbot-lambda-role \
-  --architectures arm64 \
-  --memory-size 1024 \
-  --timeout 900 \
-  --region eu-central-1
-
-# Update existing function
-aws lambda update-function-code \
-  --function-name coinbot \
-  --image-uri 080328315628.dkr.ecr.eu-central-1.amazonaws.com/coinbot:latest \
-  --region eu-central-1
-```
-
-3. **Configure environment variables** (via AWS Console or CLI):
-```bash
-aws lambda update-function-configuration \
-  --function-name coinbot \
-  --environment "Variables={
-    BOT_ENABLED=true,
-    BOT_DRY_RUN=true,
-    BOT_DRY_RUN_INITIAL_BALANCE=1000,
-    BOT_NUM_POSITIONS=3,
-    BOT_MAX_ALLOCATION_PERCENT=5.0,
-    BOT_VOLUME_LIMIT=100000,
-    S3_BUCKET_NAME=your-bucket-name,
-    BITVAVO_API_KEY=your-api-key,
-    BITVAVO_API_SECRET=your-api-secret
-  }" \
-  --region eu-central-1
-```
-
-4. **Test the function**:
-```bash
-aws lambda invoke --function-name coinbot --region eu-central-1 response.json
-cat response.json
-```
-
-5. **Schedule with EventBridge** (optional - run every 2 hours):
-```bash
-# Create schedule rule
-aws events put-rule \
-  --name coinbot-schedule \
-  --schedule-expression "rate(2 hours)" \
-  --region eu-central-1
-
-# Grant EventBridge permission to invoke Lambda
-aws lambda add-permission \
-  --function-name coinbot \
-  --statement-id coinbot-eventbridge \
-  --action lambda:InvokeFunction \
-  --principal events.amazonaws.com \
-  --source-arn arn:aws:events:eu-central-1:<account-id>:rule/coinbot-schedule \
-  --region eu-central-1
-
-# Add Lambda as target
-aws events put-targets \
-  --rule coinbot-schedule \
-  --targets "Id"="1","Arn"="arn:aws:lambda:eu-central-1:<account-id>:function:coinbot" \
-  --region eu-central-1
-```
-
-#### Local Testing with Lambda Runtime
-
-Test the container locally before deploying:
-
-```bash
-# Build for local testing (amd64)
-docker buildx build --platform linux/amd64 --provenance=false -t coinbot:test .
-
-# Run with Lambda emulator
-docker run --platform linux/amd64 -p 9000:8080 \
-  -e BOT_ENABLED=true \
-  -e BOT_DRY_RUN=true \
-  -e BITVAVO_API_KEY=your-key \
-  -e BITVAVO_API_SECRET=your-secret \
-  -e S3_BUCKET_NAME=your-bucket \
-  coinbot:test
-
-# Test invocation (in another terminal)
-curl "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{}'
-```
-
-## Development
-
-### Running Tests
-
-```bash
-make test
-```
-
-### Code Quality
-
-```bash
-make lint        # Check for linting issues
-make format      # Auto-format code
-make type-check  # Type checking with mypy
-```
+The account comes from `aws sts get-caller-identity`; override it with `AWS_ACCOUNT_ID=...`, and the region with `AWS_REGION=...` (default `eu-central-1`). Set the variables of `.env.example` (and `S3_BUCKET_NAME`) on the function, and add an EventBridge rule such as `rate(2 hours)` to start it on a schedule. The function's role needs read and write access to the bucket.
 
 ## License
 
-MIT
+BSD 3-Clause, see [LICENSE](LICENSE).

@@ -57,5 +57,11 @@ class Settings(BaseSettings):
     bitvavo_rate_limit_threshold: int = 100  # Minimum remaining calls before waiting
     bitvavo_rate_limit_reset_seconds: int = 60  # Time to wait for rate limit reset
 
+    # Backtesting Configuration
+    backtest_default_initial_balance: float = 1000.0  # Default starting EUR balance for backtesting
+    backtest_default_time_resolution: str = "1h"  # Default time resolution for backtesting
+    backtest_default_time_span: str = "5y"  # Default time span for backtesting
+    backtest_evaluation_interval_hours: int = 2  # Hours between strategy evaluations
+
 
 settings = Settings()

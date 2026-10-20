@@ -1,7 +1,7 @@
 .PHONY: help install run test lint format type-check clean ecr-build-and-push lambda-update lambda-publish
 
 # AWS Configuration
-AWS_ACCOUNT_ID := 080328315628
+AWS_ACCOUNT_ID ?= $(shell aws sts get-caller-identity --query Account --output text 2>/dev/null)
 AWS_REGION ?= eu-central-1
 ECR_REPO_NAME ?= coinbot
 ECR_REPO_URI := $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/$(ECR_REPO_NAME)
