@@ -1,0 +1,83 @@
+/* 
+  Localizable.strings
+  Coinbot
+
+  Created on 09/08/2025.
+*/
+
+// App Name
+"app_name" = "Coinbot";
+
+// Authentication
+"enter_passcode" = "Enter your passcode";
+"create_passcode" = "Create a 4-digit passcode";
+"confirm_passcode" = "Confirm your passcode";
+"secure_your_app" = "Secure Your App";
+"biometric_auth_reason" = "Authenticate to access your trading data";
+
+// Authentication Errors
+"passcode_setup_required" = "Please set up a passcode first";
+"no_passcode_found" = "No passcode found";
+"incorrect_passcode" = "Incorrect passcode";
+"authentication_cancelled" = "Authentication cancelled";
+"enter_passcode_fallback" = "Please enter your passcode";
+"biometric_not_available" = "Biometric authentication not available";
+"biometric_not_enrolled" = "Biometric authentication not set up";
+"device_passcode_not_set" = "Device passcode not set";
+"authentication_failed" = "Authentication failed";
+"passcodes_dont_match" = "Passcodes don't match";
+"failed_to_save_passcode" = "Failed to save passcode";
+
+// Settings
+"settings" = "Settings";
+"security" = "Security";
+"face_id" = "Face ID";
+"change_passcode" = "Change Passcode";
+"lock_app" = "Lock App";
+"trading_configuration" = "Trading Configuration";
+"bitvavo_api_keys" = "Bitvavo API Keys";
+"configured" = "Configured";
+"not_set" = "Not Set";
+"update_api_keys" = "Update API Keys";
+"enter_api_keys" = "Enter API Keys";
+"test_connection" = "Test Connection";
+"delete_api_keys" = "Delete API Keys";
+"about" = "About";
+"version" = "Version";
+"exchange" = "Exchange";
+"bitvavo" = "Bitvavo";
+"done" = "Done";
+
+// API Configuration
+"api_configuration" = "API Configuration";
+"enter_bitvavo_credentials" = "Enter your Bitvavo API credentials";
+"stored_securely" = "These will be stored securely in your device's Keychain";
+"credentials" = "Credentials";
+"api_key" = "API Key";
+"api_secret" = "API Secret";
+"enter_api_key" = "Enter API Key";
+"enter_api_secret" = "Enter API Secret";
+"cancel" = "Cancel";
+"save" = "Save";
+"failed_to_save_credentials" = "Failed to save API credentials";
+
+// Passcode Reset
+"reset_passcode" = "Reset Passcode";
+"reset_passcode_warning" = "This will remove your current passcode and require you to set up a new one. You will be logged out of the app.";
+"reset_confirmation" = "Are you sure you want to reset your passcode? This action cannot be undone.";
+"reset" = "Reset";
+
+// Status
+"ready" = "Ready";
+"refreshing" = "Refreshing...";
+"running" = "Running...";
+"status" = "Status";
+"refresh" = "Refresh";
+"run" = "Run";
+
+// Graph
+"graph_placeholder" = "Graph Placeholder";
+
+// Connection Test
+"success" = "Success";
+"failed" = "Failed";

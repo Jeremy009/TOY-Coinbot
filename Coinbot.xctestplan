@@ -1,0 +1,37 @@
+{
+  "configurations" : [
+    {
+      "id" : "6462ED8F-87C7-4AD2-B56A-5EBE039D6BC2",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Coinbot.xcodeproj",
+      "identifier" : "3F44CF1E2E45534D00A65A6C",
+      "name" : "Coinbot"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:Coinbot.xcodeproj",
+        "identifier" : "3F44CF2B2E45534E00A65A6C",
+        "name" : "CoinbotTests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:Coinbot.xcodeproj",
+        "identifier" : "3F44CF352E45534E00A65A6C",
+        "name" : "CoinbotUITests"
+      }
+    }
+  ],
+  "version" : 1
+}
